@@ -1,0 +1,97 @@
+/*Estilos Generales */
+body{
+	font-family: Arial, sans-serif;
+	background-color: wheat;
+	margin: 0;
+	padding: 0;
+}
+
+/*Titulo Pricipal*/
+#titulo-principal{
+	color:navy;
+	text-align: center;
+	font-size: 3.5em;
+	font-weight: 800;
+	margin: 30px 0 10px;
+	font-family: 'Segoe UI', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	letter-spacing: -1px;
+	position: relative;
+	padding-bottom: 15px;
+}
+
+/*Sombra del Titulo: para darle un mejor efecto.*/
+#titulo-principal{
+	text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/*Descripcion y Mission*/
+.descripcion{
+	color: #333;
+	font-size: 16px;
+	text-align: center;
+	font-weight: 600;
+	margin: 5px 0;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.responsive-img{
+	max-width: 100%;
+	height: auto;
+}
+
+.card{
+	background-color: white;
+	margin: 20px auto;
+	padding: 20px;
+	width: 80%;
+	border-radius: 8px;
+}
+
+ul{
+	list-style: square;
+}
+
+li{
+	margin-bottom: 8px;
+}
+
+.boton{
+	display: inline-block;
+	background-color: navy;
+	color: white;
+	padding: 10px 15px;
+	text-decoration: none;
+	border-radius: 5px;
+}
+
+.boton:hover {
+	background-color: rgb(238, 96, 143);
+}
+
+@media (max-width: 768px) {
+	#titulo-principal{
+		font-size: 2.5em;
+		margin: 20px 0 8px;
+		letter-spacing: -0.5px;
+	}
+	.descripcion{
+		font-size: 1.2em;
+		padding: 0 15px;
+	}
+	.card{
+		background-color: rgb(188, 244, 244);
+	}
+}
+
+footer{
+	background: linear-gradient(135deg, #2c3e50, #34495e);
+	color: white;
+	padding: 40px 20px;
+	text-align: center;
+	margin-top: 50px;
+	font-family: 'Arial', sans-serif;
+	position: relative;
+	overflow: hidden;
+	border-top: 3px solid #3498db;
+	box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.1);
+}
