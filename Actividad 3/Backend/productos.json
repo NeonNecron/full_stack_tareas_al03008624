@@ -1,0 +1,18 @@
+[
+  {
+    "id": "1771450699737",
+    "nombre": "Big Mac",
+    "descripcion": "Hamburguesa doble de 2 pisos con jitomate, cebolla, lechuga y salsa especial",
+    "cantidad": 3,
+    "precio": 129,
+    "fechaCreacion": "2026-02-18T21:38:19.737Z"
+  },
+  {
+    "id": "1771451145285",
+    "nombre": "Papitas Sabritas",
+    "descripcion": "Bolsa de papitas con sal y aceite",
+    "cantidad": 3,
+    "precio": 20,
+    "fechaCreacion": "2026-02-18T21:45:45.285Z"
+  }
+]
