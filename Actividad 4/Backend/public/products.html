@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Productos</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f4; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h1, h2 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #007bff; color: white; }
+        .form-group { margin-bottom: 15px; }
+        input, textarea { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; margin-right: 5px; }
+        button:hover { background-color: #0056b3; }
+        .delete-btn { background-color: #dc3545; }
+        .delete-btn:hover { background-color: #c82333; }
+        .edit-btn { background-color: #ffc107; color: black; }
+        .edit-btn:hover { background-color: #e0a800; }
+        #logout { float: right; background-color: #6c757d; }
+        #logout:hover { background-color: #5a6268; }
+        .error { color: red; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button id="logout">Cerrar sesión</button>
+        <h1>Gestión de Productos</h1>
+
+        <!-- Formulario para agregar/editar producto -->
+        <h2 id="formTitle">Agregar Producto</h2>
+        <form id="productForm">
+            <input type="hidden" id="productId">
+            <div class="form-group">
+                <label for="name">Nombre:</label>
+                <input type="text" id="name" required>
+            </div>
+            <div class="form-group">
+                <label for="price">Precio:</label>
+                <input type="number" id="price" step="0.01" required>
+            </div>
+            <div class="form-group">
+                <label for="description">Descripción:</label>
+                <textarea id="description" rows="3"></textarea>
+            </div>
+            <button type="submit">Guardar</button>
+            <button type="button" id="cancelEdit">Cancelar</button>
+        </form>
+
+        <hr>
+
+        <!-- Lista de productos -->
+        <h2>Lista de Productos</h2>
+        <div id="productList"></div>
+        <div id="error" class="error"></div>
+    </div>
+
+    <script>
+        const API_URL = '/api/products';
+        let token = localStorage.getItem('token');
+
+        // Verificar si hay token, si no redirigir a login
+        if (!token) {
+            window.location.href = '/login.html';
+        }
+
+        // Elementos del DOM
+        const productListDiv = document.getElementById('productList');
+        const productForm = document.getElementById('productForm');
+        const productId = document.getElementById('productId');
+        const nameInput = document.getElementById('name');
+        const priceInput = document.getElementById('price');
+        const descriptionInput = document.getElementById('description');
+        const formTitle = document.getElementById('formTitle');
+        const cancelBtn = document.getElementById('cancelEdit');
+        const errorDiv = document.getElementById('error');
+        const logoutBtn = document.getElementById('logout');
+
+        // Cargar productos al inicio
+        loadProducts();
+
+        // Evento submit del formulario (crear o actualizar)
+        productForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const productData = {
+                name: nameInput.value,
+                price: parseFloat(priceInput.value),
+                description: descriptionInput.value
+            };
+            const id = productId.value;
+
+            if (id) {
+                // Actualizar
+                updateProduct(id, productData);
+            } else {
+                // Crear
+                createProduct(productData);
+            }
+        });
+
+        // Cancelar edición
+        cancelBtn.addEventListener('click', () => {
+            resetForm();
+        });
+
+        // Cerrar sesión
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '/login.html';
+        });
+
+        // Función para cargar productos
+        async function loadProducts() {
+            try {
+                const res = await fetch(API_URL, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        // Token inválido, redirigir a login
+                        localStorage.removeItem('token');
+                        window.location.href = '/login.html';
+                    }
+                    throw new Error('Error al cargar productos');
+                }
+                const products = await res.json();
+                renderProducts(products);
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // Función para renderizar productos en tabla
+        function renderProducts(products) {
+            if (products.length === 0) {
+                productListDiv.innerHTML = '<p>No hay productos registrados.</p>';
+                return;
+            }
+            let html = '<table><tr><th>Nombre</th><th>Precio</th><th>Descripción</th><th>Acciones</th></tr>';
+            products.forEach(p => {
+                html += `<tr>
+                    <td>${p.name}</td>
+                    <td>$${p.price.toFixed(2)}</td>
+                    <td>${p.description || ''}</td>
+                    <td>
+                        <button class="edit-btn" onclick="editProduct('${p._id}')">Editar</button>
+                        <button class="delete-btn" onclick="deleteProduct('${p._id}')">Eliminar</button>
+                    </td>
+                </tr>`;
+            });
+            html += '</table>';
+            productListDiv.innerHTML = html;
+        }
+
+        // Función para crear producto
+        async function createProduct(data) {
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (!res.ok) throw new Error('Error al crear producto');
+                resetForm();
+                loadProducts(); // Recargar lista
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // Función para actualizar producto
+        async function updateProduct(id, data) {
+            try {
+                const res = await fetch(`${API_URL}/${id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                if (!res.ok) throw new Error('Error al actualizar producto');
+                resetForm();
+                loadProducts();
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // Función para eliminar producto
+        window.deleteProduct = async function(id) {
+            if (!confirm('¿Estás seguro de eliminar este producto?')) return;
+            try {
+                const res = await fetch(`${API_URL}/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (!res.ok) throw new Error('Error al eliminar producto');
+                loadProducts();
+            } catch (error) {
+                showError(error.message);
+            }
+        };
+
+        // Función para editar (cargar datos en formulario)
+        window.editProduct = async function(id) {
+            try {
+                const res = await fetch(`${API_URL}/${id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                if (!res.ok) throw new Error('Error al obtener producto');
+                const product = await res.json();
+                productId.value = product._id;
+                nameInput.value = product.name;
+                priceInput.value = product.price;
+                descriptionInput.value = product.description || '';
+                formTitle.textContent = 'Editar Producto';
+                cancelBtn.style.display = 'inline-block';
+            } catch (error) {
+                showError(error.message);
+            }
+        };
+
+        // Función para resetear formulario
+        function resetForm() {
+            productId.value = '';
+            nameInput.value = '';
+            priceInput.value = '';
+            descriptionInput.value = '';
+            formTitle.textContent = 'Agregar Producto';
+            cancelBtn.style.display = 'none';
+        }
+
+        // Función para mostrar errores
+        function showError(msg) {
+            errorDiv.textContent = msg;
+            setTimeout(() => errorDiv.textContent = '', 3000);
+        }
+    </script>
+</body>
+</html>
