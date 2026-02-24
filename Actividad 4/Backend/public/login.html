@@ -80,7 +80,7 @@
                         localStorage.setItem('token', data.token);
                         messageDiv.className = 'success';
                         messageDiv.textContent = 'Login exitoso. Token guardado.';
-                        // Opcional: redirigir
+                        window.location.href = '/products.html';
                     } else {
                         messageDiv.className = 'success';
                         messageDiv.textContent = 'Registro exitoso. Ahora inicia sesión.';
